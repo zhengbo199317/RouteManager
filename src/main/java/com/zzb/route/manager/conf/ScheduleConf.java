@@ -47,7 +47,7 @@ public class ScheduleConf {
     /*
     定时器更新服务器状态
      */
-    @Scheduled(cron = "*/30 * * * * ?")
+    @Scheduled(cron = "00 10 * * * ?")
     public void refreshRoute() {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();

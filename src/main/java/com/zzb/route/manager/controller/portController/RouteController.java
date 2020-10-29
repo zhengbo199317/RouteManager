@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Api(tags = "路由管理")
 @RestController
@@ -50,35 +51,17 @@ public class RouteController extends ResultVo {
     @ApiOperation(value = "获取概览数据")
     @RequestMapping(value = "/managerGet", method = RequestMethod.POST)
     public ResultVo managerGet() throws SQLException {
-        Connection connection = null;
-        SessionImplementor session = null;
-        List<String> list = new ArrayList<>();
-        try {
-            session = entityManager.unwrap(SessionImplementor.class);
-            connection = session.connection();
-            String sql = "select count(id) from routedetail where routeStatus ='服务异常'";
-            Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                list.add(rs.getString(1));
-            }
-            sql = "select count(id) from routedetail where routeStatus ='服务正常'";
-            ResultSet rs2 = statement.executeQuery(sql);
-            while (rs2.next()){
-                list.add(rs2.getString(1));
-            }
-            sql="select count(id) from routedetail";
-            ResultSet rs3 = statement.executeQuery(sql);
-            while (rs3.next()){
-                list.add(rs3.getString(1));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            connection.close();
-            session.close();
-        }
-        return success(list);
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        String routesName = ops.get("routes");
+        List<String> names = gson.fromJson(routesName, List.class);
+        List<RouteDetail> list=new ArrayList<>();
+        names.stream().forEach(e->list.add(gson.fromJson(ops.get(e),RouteDetail.class)));
+        List<RouteDetail> norMals = list.stream().filter(e -> e.getRouteStatus().equals("服务正常")).collect(Collectors.toList());
+        List<Integer> countList=new ArrayList<>();
+        countList.add(list.size()-norMals.size());
+        countList.add(norMals.size());
+        countList.add(list.size());
+        return success(countList);
     }
 
     @ApiOperation(value = "添加路由")

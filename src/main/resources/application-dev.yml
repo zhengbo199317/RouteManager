@@ -12,7 +12,7 @@ spring:
   redis:
     port: 6379
     host: 127.0.0.1
-    timeout: 6000  # 连接超时时长（毫秒）
+#    timeout: 0  # 连接超时时长（毫秒）
     lettuce:
       pool:
         max-active: 1000  #连接池最大连接数（使用负值表示没有限制）
@@ -39,8 +39,8 @@ spring:
   task:
     execution:
       pool:
-        core-size: 16
-        max-size: 32
+        core-size: 50
+        max-size: 100
         keep-alive: 60s
         allow-core-thread-timeout: true
         queue-capacity: 50
