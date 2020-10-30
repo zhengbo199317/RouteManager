@@ -48,9 +48,10 @@ public class ScheduleConf {
         //每10次任务后更新数据库状态
         Long tasks = ops.increment("tasks");
         if (tasks==20){
-            List<RouteDetail> routeDetails=new ArrayList<>();
-            routeNames.stream().forEach(e->routeDetails.add(gson.fromJson(ops.get(e),RouteDetail.class)));
-            routeDetailService.save(routeDetails);
+            //mysql性能问题,不回填状态
+//            List<RouteDetail> routeDetails=new ArrayList<>();
+//            routeNames.stream().forEach(e->routeDetails.add(gson.fromJson(ops.get(e),RouteDetail.class)));
+//            routeDetailService.save(routeDetails);
             ops.set("tasks","0");
         }
     }

@@ -43,11 +43,11 @@ public class DelaylUtils {
             CloseableHttpResponse execute = httpClient.execute(httpGet);
             long end = System.currentTimeMillis();
             dif = end - start;
-            routeDetail.setRouteDelay(String.valueOf(dif)).setRouteStatus("服务正常");
+            routeDetail.setRouteDelay(String.valueOf(dif)+"ms").setRouteStatus("服务正常");
             ops.set(routeDetail.getRouteName(), gson.toJson(routeDetail));
         } catch (Exception e) {
             //连接失败
-            routeDetail.setRouteDelay("-1").setRouteStatus("服务异常");
+            routeDetail.setRouteDelay("9999ms").setRouteStatus("服务异常");
             ops.set(routeDetail.getRouteName(), gson.toJson(routeDetail));
         }
 //        System.out.println(Thread.currentThread().getName()+"结束了");
