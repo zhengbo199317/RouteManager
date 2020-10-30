@@ -42,23 +42,31 @@ public class ScheduleConf {
         for (String routeName:routeNames){
             delaylUtils.delay(routeName);
         }
+        //每10次任务后更新数据库状态
+        Long tasks = ops.increment("tasks");
+        if (tasks==20){
+            List<RouteDetail> routeDetails=new ArrayList<>();
+            routeNames.stream().forEach(e->routeDetails.add(gson.fromJson(ops.get(e),RouteDetail.class)));
+            routeDetailService.save(routeDetails);
+            ops.set("tasks","0");
+        }
     }
 
     /*
     定时器更新服务器状态
      */
-    @Scheduled(cron = "00 10 * * * ?")
-    public void refreshRoute() {
-        List<String>  routeNames = new ArrayList<>();
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        String routeStr = ops.get("routes");
-        if (routeStr == null) {
-            return;
-        } else {
-            routeNames=gson.fromJson(routeStr, List.class);
-            List<RouteDetail> routeDetails=new ArrayList<>();
-            routeNames.stream().forEach(e->routeDetails.add(gson.fromJson(ops.get(e),RouteDetail.class)));
-            routeDetailService.save(routeDetails);
-        }
-    }
+//    @Scheduled(cron = "00 * * * * ?")
+//    public void refreshRoute() {
+//        List<String>  routeNames = new ArrayList<>();
+//        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+//        String routeStr = ops.get("routes");
+//        if (routeStr == null) {
+//            return;
+//        } else {
+//            routeNames=gson.fromJson(routeStr, List.class);
+//            List<RouteDetail> routeDetails=new ArrayList<>();
+//            routeNames.stream().forEach(e->routeDetails.add(gson.fromJson(ops.get(e),RouteDetail.class)));
+//            routeDetailService.save(routeDetails);
+//        }
+//    }
 }

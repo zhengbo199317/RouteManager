@@ -6,7 +6,6 @@ import com.zzb.route.manager.service.RouteDetailService;
 import com.zzb.route.manager.vo.ResultVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -15,10 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +45,7 @@ public class RouteController extends ResultVo {
 
     @ApiOperation(value = "获取概览数据")
     @RequestMapping(value = "/managerGet", method = RequestMethod.POST)
-    public ResultVo managerGet() throws SQLException {
+    public ResultVo managerGet(){
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         String routesName = ops.get("routes");
         List<String> names = gson.fromJson(routesName, List.class);
@@ -64,7 +59,7 @@ public class RouteController extends ResultVo {
         return success(countList);
     }
 
-    @ApiOperation(value = "添加路由")
+    @ApiOperation(value = "添加服务器")
     @RequestMapping(value = "/routePost", method = RequestMethod.POST)
     public ResultVo routePost(String url, String name) {
 
