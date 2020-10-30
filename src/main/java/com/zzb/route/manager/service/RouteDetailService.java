@@ -11,6 +11,6 @@ public interface RouteDetailService {
     List<RouteDetail> findAll();
     RouteDetail findByRouteName(String routeName);
     void save(RouteDetail routeDetail);
-    void delete(String id);
+    void delete(Integer id);
     void save(List<RouteDetail> routeDetails);
 }

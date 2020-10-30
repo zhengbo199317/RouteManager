@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.io.Serializable;
 
@@ -13,7 +14,7 @@ import java.io.Serializable;
 @Entity
 public class RouteField implements Serializable {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String routeName;
     private String fieldName;

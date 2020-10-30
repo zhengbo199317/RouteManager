@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -32,10 +33,12 @@ public class ScheduleConf {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         String routeStr = ops.get("routes");
-        if (routeStr == null) {
+        String routesRefresh = ops.get("routesRefresh");
+        if (routeStr == null|routesRefresh!=null) {
             List<RouteDetail> routeDetails = routeDetailService.findAll();
             routeNames = routeDetails.stream().map(e -> e.getRouteName()).collect(Collectors.toList());
             ops.set("routes", gson.toJson(routeNames));
+            ops.set("routesRefresh","",1, TimeUnit.MILLISECONDS);
         } else {
             routeNames=gson.fromJson(routeStr, List.class);
         }

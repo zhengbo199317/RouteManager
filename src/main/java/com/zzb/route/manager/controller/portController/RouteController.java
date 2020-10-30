@@ -72,4 +72,21 @@ public class RouteController extends ResultVo {
 
         return success();
     }
+
+    @ApiOperation(value = "路由添加")
+    @RequestMapping(value = "/routesPut",method = RequestMethod.POST)
+    public ResultVo routesPut(String routeName,String routeUrl,String serverName
+            ,String workerName,String workerPhone){
+        try {
+            routeDetailService.save(new RouteDetail().setRouteName(routeName).setRouteUrl(routeUrl)
+                    .setWorkerName(workerName).setWorkerPhone(workerPhone).setServerName(serverName));
+        }catch (Exception e){
+            if (e.getMessage().contains("constraint")){
+                return faild("已存在");
+            }
+        }
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set("routesRefresh","1");
+        return success();
+    }
 }

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RouteDetailRepository extends JpaRepository<RouteDetail,String> {
+public interface RouteDetailRepository extends JpaRepository<RouteDetail,Integer> {
     Page<RouteDetail> findAllByServerName(String serverName, Pageable pageable);
     RouteDetail findByRouteName(String routeName);
 }

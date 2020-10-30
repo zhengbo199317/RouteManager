@@ -38,7 +38,7 @@ public class RouteDetailServiceImpl implements RouteDetailService {
 
     @Override
     @Transactional
-    public void delete(String id) {
+    public void delete(Integer id) {
         repository.deleteById(id);
     }
 
