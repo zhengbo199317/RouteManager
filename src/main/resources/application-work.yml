@@ -10,8 +10,8 @@ spring:
       max-file-size: 50MB
       max-request-size: 50MB
   redis:
-    #    port: 6379
-    #    host: 129.28.198.241
+    port: 6379
+    host: 127.0.0.1
     #    timeout: 0  # 连接超时时长（毫秒）
     lettuce:
       pool:
@@ -20,9 +20,9 @@ spring:
         min-idle: 5 # 连接池中的最小空闲连接
         max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）
     #    password: z123456
-    sentinel:
-      master: mymaster
-      nodes: 192.168.56.101:26379,192.168.56.102:26379,192.168.56.103:26379
+#    sentinel:
+#      master: mymaster
+#      nodes: 192.168.56.101:26379,192.168.56.102:26379,192.168.56.103:26379
   #mysql数据库配置,连接池为druid
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
