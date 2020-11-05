@@ -2,12 +2,12 @@ package com.zzb.route.manager.utils;
 
 import com.google.gson.Gson;
 import com.zzb.route.manager.dataObject.RouteDetail;
-import com.zzb.route.manager.service.RouteDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -19,8 +19,6 @@ import java.net.URL;
 public class DelaylUtils {
     @Autowired
     private StringRedisTemplate redisTemplate;
-    @Autowired
-    private RouteDetailService routeDetailService;
     Gson gson = new Gson();
 
     @Async
@@ -28,15 +26,16 @@ public class DelaylUtils {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         RouteDetail routeDetail=null;
         String routeStr = ops.get(routeName);
-        if (routeStr==null){
-            routeDetail=routeDetailService.findByRouteName(routeName);
+        if (StringUtils.isEmpty(routeStr)){
+            //默认初始化
+            routeDetail=new RouteDetail();
         }else{
             routeDetail = gson.fromJson(routeStr, RouteDetail.class);
         }
         long dif = 0;
         try {
-            URL url=new URL(routeDetail.getRouteUrl());
             long start = System.currentTimeMillis();
+            URL url=new URL(routeDetail.getRouteUrl());
             HttpURLConnection con=(HttpURLConnection)url.openConnection();
             con.setConnectTimeout(3000);
             if (con.getResponseCode()>200){

@@ -3,12 +3,6 @@ server:
   servlet:
     context-path:
 spring:
-  servlet:
-    ##设置文件上传
-    multipart:
-      enabled: true
-      max-file-size: 50MB
-      max-request-size: 50MB
   redis:
 #    port: 6379
 #    host: 129.28.198.241
@@ -23,23 +17,7 @@ spring:
     sentinel:
       master: mymaster
       nodes: 192.168.56.101:26379,192.168.56.102:26379,192.168.56.103:26379
-  #mysql数据库配置,连接池为druid
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    type: com.mysql.cj.jdbc.MysqlDataSource
-    url: jdbc:mysql://129.28.198.241:3306/routes?useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: zb
-    password: z123456
-
-  ##必须写明方言,和jpa使用类型,不然发生错误
-  jpa:
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
-    database: mysql
-  jooq:
-    sql-dialect: org.hibernate.dialect.MySQL5Dialect
+#线程池设置
   task:
     execution:
       pool:
