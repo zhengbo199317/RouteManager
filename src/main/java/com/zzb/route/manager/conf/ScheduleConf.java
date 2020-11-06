@@ -31,6 +31,7 @@ public class ScheduleConf {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         //redis分布式锁
+        System.out.println("开始定时任务1");
         Long refreshRouteStatus = ops.increment("refreshRouteStatus");
         if (refreshRouteStatus>1){
             System.out.println("有别的线程在执行");
@@ -65,6 +66,7 @@ public class ScheduleConf {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
         //redis分布式锁
+        System.out.println("开始定时任务2");
         Long refreshNginxValue = ops.increment("refreshNginxValue");
         if (refreshNginxValue>1){
             System.out.println("有别的线程在执行");
