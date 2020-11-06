@@ -33,7 +33,7 @@ public class ScheduleConf {
         //redis分布式锁
         Long refreshRouteStatus = ops.increment("refreshRouteStatus");
         if (refreshRouteStatus>1){
-            System.out.println("已经有进程在执行服务");
+            System.out.println("有别的线程在执行");
             return;
         }
         try {
@@ -67,7 +67,7 @@ public class ScheduleConf {
         //redis分布式锁
         Long refreshNginxValue = ops.increment("refreshNginxValue");
         if (refreshNginxValue>1){
-            System.out.println("已经有进程在执行服务");
+            System.out.println("有别的线程在执行");
             return;
         }
         try {
