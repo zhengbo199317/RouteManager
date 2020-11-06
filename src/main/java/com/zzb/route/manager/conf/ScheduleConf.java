@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -29,16 +30,32 @@ public class ScheduleConf {
     public void refreshRouteStatus() {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        String routeStr = ops.get("routes");
-        if (routeStr == null) {
-            //修改为没有就没有,去除mysql化
+        //redis分布式锁
+        Long refreshRouteStatus = ops.increment("refreshRouteStatus");
+        if (refreshRouteStatus>1){
+            System.out.println("已经有进程在执行服务");
             return;
-        } else {
-            routeNames=gson.fromJson(routeStr, List.class);
         }
-        for (String routeName:routeNames){
-            delaylUtils.delay(routeName);
+        try {
+            String routeStr = ops.get("routes");
+            if (routeStr == null) {
+                //修改为没有就没有,去除mysql化
+                //结束锁
+                ops.set("refreshRouteStatus","0",1, TimeUnit.MILLISECONDS);
+                return;
+            } else {
+                routeNames=gson.fromJson(routeStr, List.class);
+            }
+            for (String routeName:routeNames){
+                delaylUtils.delay(routeName);
+            }
+        }catch (Exception e){
+            //结束锁
+            ops.set("refreshRouteStatus","0",1, TimeUnit.MILLISECONDS);
+            return;
         }
+        //结束锁
+        ops.set("refreshRouteStatus","0",1, TimeUnit.MILLISECONDS);
     }
     /*
     间隔8s检测服务状态
@@ -47,45 +64,63 @@ public class ScheduleConf {
     public void refreshNginxValue() {
         List<String>  routeNames = new ArrayList<>();
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        String routeStr = ops.get("routes");
-        if (routeStr == null) {
-            //修改为没有就没有,去除mysql化
+        //redis分布式锁
+        Long refreshNginxValue = ops.increment("refreshNginxValue");
+        if (refreshNginxValue>1){
+            System.out.println("已经有进程在执行服务");
             return;
-        } else {
-            routeNames=gson.fromJson(routeStr, List.class);
         }
-        List<RouteDetail> routeDetails=new ArrayList<>();
-        for (String routeName:routeNames){
-            String routeDetail = ops.get(routeName);
-            routeDetails.add(gson.fromJson(routeDetail, RouteDetail.class));
-        }
-        List<String> serverNames = routeDetails.stream()
-                .map(e -> e.getServerName()).distinct()
-                .filter(e->(!StringUtils.isEmpty(e)))
-                .collect(Collectors.toList());
-        for (String serverName:serverNames){
-            String serverUrl = ops.get(serverName);
-            //第一次初始化
-            if (StringUtils.isEmpty(serverUrl)){
-                List<RouteDetail> rds = routeDetails.stream().filter(e -> e.getServerName().equals(serverName))
-                        .collect(Collectors.toList());
-                ops.set(serverName,rds.get(0).getServerUrl());
+        try {
+            String routeStr = ops.get("routes");
+            if (routeStr == null) {
+                //修改为没有就没有,去除mysql化
+                //结束锁
+                ops.set("refreshNginxValue","0",1, TimeUnit.MILLISECONDS);
                 return;
+            } else {
+                routeNames=gson.fromJson(routeStr, List.class);
             }
-            RouteDetail veryRd = routeDetails.stream()
-                    .filter(e -> e.getServerUrl().equals(serverUrl))
-                    .collect(Collectors.toList()).get(0);
-            //如果服务异常
-            if (!veryRd.getRouteStatus().equals("服务正常")){
-                List<RouteDetail> workRd = routeDetails.stream()
-                        .filter(e -> e.getServerName().equals(serverName))
-                        .filter(e -> (!e.getServerUrl().equals(serverUrl)))
-                        .collect(Collectors.toList());
-                if (workRd.size()>0){
-                    ops.set(serverName,workRd.get(0).getServerUrl());
+            List<RouteDetail> routeDetails=new ArrayList<>();
+            for (String routeName:routeNames){
+                String routeDetail = ops.get(routeName);
+                routeDetails.add(gson.fromJson(routeDetail, RouteDetail.class));
+            }
+            List<String> serverNames = routeDetails.stream()
+                    .map(e -> e.getServerName()).distinct()
+                    .filter(e->(!StringUtils.isEmpty(e)))
+                    .collect(Collectors.toList());
+            for (String serverName:serverNames) {
+                String serverUrl = ops.get(serverName);
+                //第一次初始化
+                if (StringUtils.isEmpty(serverUrl)) {
+                    List<RouteDetail> rds = routeDetails.stream().filter(e -> e.getServerName().equals(serverName))
+                            .collect(Collectors.toList());
+                    ops.set(serverName, rds.get(0).getServerUrl());
+                    //结束锁
+                    ops.set("refreshNginxValue","0",1, TimeUnit.MILLISECONDS);
+                    return;
+                }
+                RouteDetail veryRd = routeDetails.stream()
+                        .filter(e -> e.getServerUrl().equals(serverUrl))
+                        .collect(Collectors.toList()).get(0);
+                //如果服务异常
+                if (!veryRd.getRouteStatus().equals("服务正常")) {
+                    List<RouteDetail> workRd = routeDetails.stream()
+                            .filter(e -> e.getServerName().equals(serverName))
+                            .filter(e -> (!e.getServerUrl().equals(serverUrl)))
+                            .collect(Collectors.toList());
+                    if (workRd.size() > 0) {
+                        ops.set(serverName, workRd.get(0).getServerUrl());
+                    }
                 }
             }
+        }catch (Exception e){
+            //结束锁
+            ops.set("refreshNginxValue","0",1, TimeUnit.MILLISECONDS);
+            return;
         }
+        //结束锁
+        ops.set("refreshNginxValue","0",1, TimeUnit.MILLISECONDS);
     }
 
     /*
